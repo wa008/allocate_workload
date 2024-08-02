@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+总量: <input type="text" id="total" name="name" size="30" value = "1,2,3,4,5,6,7,8,9,10"/>
+<p></p>
+增强: <input type="text" id="category_1" name="name" size="30" value = "2,3,4,5,6,7,8,9,10,11"/>
+<p></p>
+
+<button onclick="main()">提交</button>
+<p id="output_total"></p>
+<p id="output_category_1"></p>
+<script>
+function main()
+{
+	var total = document.getElementById("total").value;
+	var category_1 = document.getElementById("category_1").value;
+	total = total.split(',');
+	category_1 = category_1.split(',');
+	var output_total = output_format(get_best_split_method(total), total, category_1);
+	output_total = "按总量划分：<br>" + output_total; 
+	var output_category_1 = output_format(get_best_split_method(category_1), total, category_1);
+	output_category_1 = "按增强划分：<br>" + output_category_1;
+
+	output = output_total + "<br>" + output_category_1;
+	document.getElementById("output_total").innerHTML = output;
+}
+</script>
+<script>
+function output_format(arr, total, category_1) {
+	// window.alert(arr);
+	var output = "";
+	for (var i = 0; i < 3; i++){
+		var total_sum = 0, category_sum = 0, index_list = Array();
+		for (var j = 0; j < arr.length; j++){
+			if (j < 3) index = 0;
+			else if (j < 6) index = 1;
+			else index = 2;
+			// var index = Math.floor(arr[j] / 3);
+			if (i == index) {
+				index_list.push(arr[j]);
+				total_sum += parseInt(total[arr[j]]);
+				category_sum += parseInt(category_1[arr[j]]);
+			}
+		}
+		var sep = ''
+		if (i < 2) sep = '&nbsp&nbsp&nbsp'
+		output += "员工" + (i + 1) + ":&nbsp&nbsp&nbsp序号:" + index_list + sep + "&nbsp&nbsp&nbsp总量:" + total_sum + "&nbsp&nbsp&nbsp增强:"+ category_sum + '<br>';
+	}
+	return output;
+}
+</script>
+<script>
+function compute_last(arr, a, b, c, now_list) {
+	// window.alert('compute_last 1: ' + arr + ' ' + a + ' ' + b + ' ' + c + ' ' + now_list);
+	for (var i = 0; i < arr.length; i++) {
+		if (arr[i] == -1) continue;
+		c += parseInt(arr[i]);
+		now_list.push(i);
+	}
+	var tmp_var_arr = Array(a, b, c);
+	var now_var = StandardDeviation(tmp_var_arr);
+	// window.alert('compute_last 2: ' + now_list + ' ; ' + now_var);
+	return new Array(now_list, now_var);
+}
+</script>
+
+<script>
+function split(arr, a, b, c, now_list) {
+	// paramter: 
+	// arr: last list
+	// a, b, c: sum
+	// now_list: 
+		
+	// return:
+	// best_list
+	// best_var
+
+	// window.alert(arr);
+	if (now_list.length == 6) {
+		return compute_last(arr, a, b, c, now_list.slice(0))
+	}
+	var best_list = Array(1), best_var = Number.MAX_VALUE;
+	for (var i = 0; i < arr.length; i++)
+	{
+		if (arr[i] == -1) continue;
+		// window.alert('before: ' + arr + ' sep ' + now_list);
+		if (now_list.length < 3) {
+			a += parseInt(arr[i]);
+		} else {
+			b += parseInt(arr[i]);
+		}
+
+		var tmp_value = arr[i];
+		arr[i] = -1;
+		now_list.push(i);
+		
+		// window.alert('update: ' + arr + ' sep ' + now_list);
+		var tmp_arr_return = split(arr, a, b, c, now_list.slice(0));
+		// window.alert('tmp_arr_return: ' + tmp_arr_return);
+		var tmp_arr = tmp_arr_return[0];
+		var tmp_var = tmp_arr_return[1];
+		if (tmp_var < best_var) {
+			best_var = tmp_var;
+			best_list = tmp_arr.slice(0);
+		}
+		
+		now_list.pop();
+		arr[i] = tmp_value;
+
+		if (now_list.length < 3) {
+			a -= parseInt(arr[i]);
+		} else {
+			b -= parseInt(arr[i]);
+		}
+		// window.alert('recovery: ' + arr + ' sep ' + now_list);
+	}
+	// window.alert('split, return 2: ' + best_list + ' ; ' + best_var);
+	return new Array(best_list, best_var);
+}
+</script>
+<script>
+function get_best_split_method(arr) {
+	var tmp_arr_return = split(arr, 0, 0, 0, new Array());
+	var tmp_arr = tmp_arr_return[0];
+	var tmp_var = tmp_arr_return[1];
+	// window.alert('get_best_split_method: ' + tmp_arr + '              ' + tmp_var);
+	return tmp_arr;
+}
+</script>
+
+<script>
+// Javascript program to calculate the 
+// standard deviation of an array
+function StandardDeviation(arr) {
+
+    // Creating the mean with Array.reduce
+    let mean = arr.reduce((acc, curr) => {
+        return acc + curr
+    }, 0) / arr.length;
+
+    // Assigning (value - mean) ^ 2 to
+    // every array item
+    arr = arr.map((k) => {
+        return (k - mean) ** 2
+    });
+
+    // Calculating the sum of updated array 
+    let sum = arr.reduce((acc, curr) => acc + curr, 0);
+
+    // Calculating the variance
+    let variance = sum / arr.length
+
+    // Returning the standard deviation
+    return Math.sqrt(sum / arr.length)
+}
+</script>
+
+
+</body>
+</html>
