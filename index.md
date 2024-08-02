@@ -1,2 +1,3 @@
-# test
-show test
+---
+layout: home
+---
